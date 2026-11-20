@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tea Menu</title>
+<meta name="description" content="Browse the house tea collection and pick a cup.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f1e7; --paper:#fffaf0; --ink:#2b2420; --muted:#6f6359; --line:#e3d8c6;
+  --accent:#7a4b2a; --accent-ink:#fff8ee; --chip:#efe5d4;
+  --black:#5b2e1f; --green:#5f7d3a; --oolong:#a0672a; --white:#b9a77c; --puerh:#4a3328;
+  --dark:#3d2a22; --herbal:#a2486b; --other:#7d7d7d;
+  --none:#8a9a7b; --low:#b8a14a; --mod:#c27a35; --high:#9b3b2a;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#1b1715; --paper:#25201c; --ink:#efe6da; --muted:#b0a395; --line:#3a322b;
+    --accent:#d39a62; --accent-ink:#1b1715; --chip:#322a24; --white:#d8c79c; --puerh:#a17d68; --dark:#9c7d6b; --black:#c07a5f; }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Source Sans 3",system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 16px}
+header{padding:40px 0 16px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:clamp(2.2rem,7vw,3.4rem);line-height:1.05;margin:0 0 6px;letter-spacing:-.01em}
+.lede{color:var(--muted);margin:0;max-width:52ch}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0 10px;border-bottom:1px solid var(--line)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=search]{flex:1 1 220px;min-width:0;padding:11px 14px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);font:inherit}
+button{font:inherit;cursor:pointer}
+.btn{padding:10px 16px;border-radius:999px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.ghost{background:transparent;color:var(--accent)}
+.filters{margin-top:10px;display:grid;gap:8px}
+.fgroup{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.fgroup::-webkit-scrollbar{display:none}
+.flabel{font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);align-self:center;min-width:64px;flex:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--chip);color:var(--ink);padding:6px 12px;border-radius:999px;font-size:.92rem;white-space:nowrap}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.status{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.9rem;margin:14px 0 8px}
+.link{background:none;border:0;color:var(--accent);text-decoration:underline;padding:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;padding-bottom:48px}
+.card{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px;color:inherit;display:flex;flex-direction:column;gap:8px;position:relative;transition:transform .12s ease,box-shadow .12s ease}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(60,40,20,.08)}
+.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.kicker{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.card h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:1.22rem;line-height:1.2;margin:0}
+.brand{color:var(--muted);font-size:.9rem;margin:-4px 0 0}
+.summary{margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:4px}
+.tag{font-size:.78rem;padding:3px 9px;border-radius:999px;background:var(--chip);color:var(--ink)}
+.caf{color:#fff;font-weight:600}
+.allergen{background:transparent;border:1px solid var(--high);color:var(--high)}
+.limited{position:absolute;top:14px;right:14px;font-size:.72rem;color:var(--accent);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.empty{padding:40px 0;color:var(--muted);text-align:center}
+dialog{border:0;border-radius:18px;padding:0;max-width:640px;width:calc(100% - 32px);background:var(--paper);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+dialog::backdrop{background:rgba(20,14,10,.55)}
+.dlg{padding:22px 22px 18px;max-height:85vh;overflow:auto}
+.dlg h2{font-family:Fraunces,Georgia,serif;font-size:1.7rem;line-height:1.15;margin:4px 0 2px}
+.dlg h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 6px}
+.dlg p{margin:0 0 8px;white-space:pre-line}
+.brew{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px}
+.brew div{background:var(--chip);border-radius:10px;padding:8px 10px}
+.brew b{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+.close{position:sticky;top:0;float:right;background:var(--chip);border:0;border-radius:999px;width:36px;height:36px;font-size:1.2rem;color:var(--ink)}
+.note{font-size:.85rem;color:var(--muted)}
+.callout{margin-top:18px;padding:12px 14px;border-radius:12px;background:var(--chip);font-weight:600}
+.q{font-family:Fraunces,Georgia,serif;font-size:1.4rem;margin:6px 0 14px}
+.opts{display:grid;gap:8px}
+.opts button{padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);text-align:left}
+.opts button:hover{border-color:var(--accent)}
+footer{color:var(--muted);font-size:.85rem;padding:0 0 32px}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <h1>The Tea Cupboard</h1>
+  <p class="lede">Browse what's on the shelf, filter by what you're in the mood for, then just tell your host which one you'd like.</p>
+</header>
+
+<div class="bar">
+  <div class="wrap">
+    <div class="row">
+      <input id="q" type="search" placeholder="Search teas, flavors, brands…" aria-label="Search teas">
+      <button class="btn" id="helpBtn">Help me choose</button>
+    </div>
+    <div class="filters" id="filters"></div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div class="status"><span id="count"></span><button class="link" id="clear" hidden>Clear filters</button></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer class="wrap">Caffeine marked ≈ is estimated from the tea type. Always check allergens if you have a sensitivity.</footer>
+
+<dialog id="detail"><div class="dlg" id="detailBody"></div></dialog>
+<dialog id="helper"><div class="dlg" id="helperBody"></div></dialog>
+
+<script>
+const TYPE_COLOR={"Black":"--black","Green":"--green","Oolong":"--oolong","White":"--white","Pu-erh":"--puerh","Dark (hei cha)":"--dark","Herbal":"--herbal","Other":"--other"};
+const CAF_COLOR={"None":"--none","Low":"--low","Moderate":"--mod","High":"--high"};
+const CAF_ORDER=["None","Low","Moderate","High"];
+const FLAVORS=[
+  ["Earthy",/earth|woody|forest|musky|wood/],
+  ["Fruity",/fruit|berr|cherry|currant|apple|pear|pomegranate|plum|cider|coconut/],
+  ["Citrus",/citrus|orange|tangerine|lemon/],
+  ["Floral",/floral|jasmine|rose|chrysanth|flower|peony/],
+  ["Spiced",/spice|cinnamon|clove|ginger|chai|cardamom|anise|pepper/],
+  ["Sweet & dessert",/sweet|vanilla|caramel|chocolate|cocoa|honey|toast|cream/],
+  ["Malty & bold",/malt|bold|full-bodied|pungent|strong/],
+  ["Mint",/mint/]
+];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+function caffeine(t){
+  const r=(t.caffeine||"").toLowerCase().trim();
+  const scale=parseFloat((t.caffeineScale||"").replace(/[^0-9.]/g,""));
+  if(/caffeine-free|^none|^no$|^no\b/.test(r)) return {level:"None",est:false};
+  if(/low/.test(r)) return {level:"Low",est:false};
+  if(/medium|moderate/.test(r)) return {level:"Moderate",est:false};
+  if(/high/.test(r)) return {level:"High",est:false};
+  const mg=r.match(/(\d+)\s*(?:-|–|to)\s*(\d+)\s*m/);
+  if(mg){const a=(+mg[1]+ +mg[2])/2; return {level:a<20?"Low":a<=50?"Moderate":"High",est:false};}
+  const n=parseFloat(r);
+  if(!isNaN(n)&&scale){const p=n/scale; return {level:p===0?"None":p<=.4?"Low":p<=.7?"Moderate":"High",est:false};}
+  const byType={"Herbal":"None","Other":"Low","White":"Low","Green":"Low","Oolong":"Moderate","Pu-erh":"Moderate","Dark (hei cha)":"Moderate","Black":"High"};
+  return {level:byType[t.type]||"Moderate",est:true};
+}
+function flavors(t){
+  const s=[t.summary,t.subtype,t.name,t.description].join(" ").toLowerCase();
+  return FLAVORS.filter(([,re])=>re.test(s)).map(([n])=>n);
+}
+
+let TEAS=[]; const state={q:"",type:new Set(),caf:new Set(),flavor:new Set()};
+
+function chipGroup(label,key,values){
+  const g=document.createElement("div"); g.className="fgroup";
+  g.innerHTML=`<span class="flabel">${label}</span>`+values.map(v=>`<button class="chip" data-k="${key}" data-v="${esc(v)}" aria-pressed="false">${esc(v)}</button>`).join("");
+  return g;
+}
+function buildFilters(){
+  const f=document.getElementById("filters");
+  const types=[...new Set(TEAS.map(t=>t.type).filter(Boolean))].sort();
+  const fl=FLAVORS.map(([n])=>n).filter(n=>TEAS.some(t=>t._flavors.includes(n)));
+  f.append(chipGroup("Type","type",types),chipGroup("Caffeine","caf",CAF_ORDER.filter(c=>TEAS.some(t=>t._caf.level===c))),chipGroup("Flavor","flavor",fl));
+  f.addEventListener("click",e=>{
+    const b=e.target.closest(".chip"); if(!b) return;
+    const set=state[b.dataset.k], v=b.dataset.v;
+    set.has(v)?set.delete(v):set.add(v); render();
+  });
+}
+function matches(t){
+  if(state.type.size&&!state.type.has(t.type)) return false;
+  if(state.caf.size&&!state.caf.has(t._caf.level)) return false;
+  if(state.flavor.size&&![...state.flavor].some(f=>t._flavors.includes(f))) return false;
+  if(state.q){const hay=[t.name,t.brand,t.type,t.subtype,t.summary,t.description,t.ingredients,t.origin].join(" ").toLowerCase();
+    if(!state.q.split(/\s+/).every(w=>hay.includes(w))) return false;}
+  return true;
+}
+function card(t,i){
+  const c=t._caf;
+  return `<button class="card" data-i="${i}">
+    ${t.limited?'<span class="limited">Limited</span>':""}
+    <span class="kicker"><span class="dot" style="background:var(${TYPE_COLOR[t.type]||"--other"})"></span>${esc(t.type)}${t.subtype?" · "+esc(t.subtype):""}</span>
+    <h2>${esc(t.name)}</h2>
+    <p class="brand">${esc(t.brand)}</p>
+    ${t.summary?`<p class="summary">${esc(t.summary)}</p>`:""}
+    <span class="meta">
+      <span class="tag caf" style="background:var(${CAF_COLOR[c.level]})">${c.est?"≈ ":""}${c.level==="None"?"No":c.level} caffeine</span>
+      ${t.style&&t.style!=="Straight"?`<span class="tag">${esc(t.style)}</span>`:""}
+      ${t.allergens?`<span class="tag allergen">Contains: ${esc(t.allergens)}</span>`:""}
+    </span></button>`;
+}
+function render(){
+  const list=TEAS.map((t,i)=>[t,i]).filter(([t])=>matches(t));
+  document.getElementById("grid").innerHTML=list.length?list.map(([t,i])=>card(t,i)).join(""):'<p class="empty">No teas match. Try removing a filter.</p>';
+  document.getElementById("count").textContent=`${list.length} of ${TEAS.length} teas`;
+  document.querySelectorAll(".chip").forEach(b=>b.setAttribute("aria-pressed",state[b.dataset.k].has(b.dataset.v)));
+  document.getElementById("clear").hidden=!(state.q||state.type.size||state.caf.size||state.flavor.size);
+}
+function showDetail(t){
+  const c=t._caf;
+  const brew=[["Water",t.waterTemp],["Steep",t.steepTime],["Leaf",t.leafAmount],["Re-steeps",t.infusions],["Serve",t.hotIced],["Milk",t.milk]].filter(([,v])=>v);
+  const caffeineLine=`${c.est?"About ":""}${c.level==="None"?"no":c.level.toLowerCase()} caffeine${c.est?" (estimated from tea type)":""}`+
+    (t.caffeine&&!c.est?` · brand says: ${esc(t.caffeine)}${t.caffeineScale?" "+esc(t.caffeineScale):""}`:"");
+  document.getElementById("detailBody").innerHTML=`
+    <button class="close" aria-label="Close" onclick="this.closest('dialog').close()">×</button>
+    <span class="kicker"><span class="dot" style="background:var(${TYPE_COLOR[t.type]||"--other"})"></span>${esc(t.type)}${t.subtype?" · "+esc(t.subtype):""}</span>
+    <h2>${esc(t.name)}</h2>
+    <p class="brand">${esc(t.brand)}${t.origin?" · "+esc(t.origin):""}${/yes/i.test(t.organic)?" · Organic":""}</p>
+    ${t.summary?`<h3>Tasting notes</h3><p>${esc(t.summary)}</p>`:""}
+    ${t.description?`<h3>About this tea</h3><p>${esc(t.description)}</p>`:""}
+    <h3>Caffeine</h3><p>${caffeineLine}</p>
+    ${t.ingredients?`<h3>Ingredients</h3><p>${esc(t.ingredients)}</p>`:""}
+    ${t.allergens?`<h3>Allergens</h3><p><strong>${esc(t.allergens)}</strong></p>`:""}
+    ${brew.length?`<h3>Brewing</h3><div class="brew">${brew.map(([k,v])=>`<div><b>${k}</b>${esc(v)}</div>`).join("")}</div>`:""}
+    ${t.preparation?`<p class="note" style="margin-top:8px">${esc(t.preparation)}</p>`:""}
+    <div class="callout">Like the sound of it? Tell your host: “${esc(t.name)}”.</div>`;
+  document.getElementById("detail").showModal();
+}
+
+// Help me choose
+const STEPS=[
+  {q:"How much caffeine?",key:"caf",opts:[["None, please",["None"]],["Just a little",["None","Low"]],["A gentle lift",["Low","Moderate"]],["Wake me up",["Moderate","High"]],["Doesn't matter",[]]]},
+  {q:"What sounds good?",key:"flavor",opts:[["Earthy & deep",["Earthy"]],["Fruity or citrusy",["Fruity","Citrus"]],["Warm & spiced",["Spiced"]],["Sweet & cozy",["Sweet & dessert"]],["Floral & light",["Floral"]],["Surprise me",[]]]}
+];
+function helper(step=0){
+  const body=document.getElementById("helperBody");
+  if(step>=STEPS.length){document.getElementById("helper").close();render();window.scrollTo({top:document.querySelector(".bar").offsetTop,behavior:"smooth"});return;}
+  const s=STEPS[step];
+  body.innerHTML=`<button class="close" aria-label="Close" onclick="this.closest('dialog').close()">×</button>
+    <span class="note">Question ${step+1} of ${STEPS.length}</span><p class="q">${s.q}</p>
+    <div class="opts">${s.opts.map(([l],i)=>`<button data-i="${i}">${l}</button>`).join("")}</div>`;
+  body.querySelectorAll(".opts button").forEach(b=>b.onclick=()=>{
+    state[s.key]=new Set(s.opts[+b.dataset.i][1].filter(v=>s.key!=="caf"||TEAS.some(t=>t._caf.level===v))); helper(step+1);});
+}
+
+document.getElementById("q").addEventListener("input",e=>{state.q=e.target.value.trim().toLowerCase();render();});
+document.getElementById("clear").onclick=()=>{state.q="";document.getElementById("q").value="";["type","caf","flavor"].forEach(k=>state[k].clear());render();};
+document.getElementById("grid").addEventListener("click",e=>{const c=e.target.closest(".card");if(c)showDetail(TEAS[+c.dataset.i]);});
+document.getElementById("helpBtn").onclick=()=>{state.type.clear();state.q="";document.getElementById("q").value="";helper(0);document.getElementById("helper").showModal();};
+document.querySelectorAll("dialog").forEach(d=>d.addEventListener("click",e=>{if(e.target===d)d.close();}));
+
+fetch("teas.json").then(r=>r.json()).then(d=>{
+  TEAS=d.map(t=>({...t,_caf:caffeine(t),_flavors:flavors(t)}));
+  buildFilters();render();
+}).catch(()=>{document.getElementById("grid").innerHTML='<p class="empty">Couldn\'t load the tea list.</p>';});
+</script>
+</body>
+</html>
