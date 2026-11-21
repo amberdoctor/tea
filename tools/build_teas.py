@@ -24,11 +24,14 @@ def main(src):
             if row.get("Stock","").strip().lower() not in IN_STOCK: continue
             tea = {KEYS[c]: row.get(c,"").strip() for c in PUBLIC}
             if "of ?" in tea["caffeineScale"]: tea["caffeineScale"] = ""
-            tea["limited"] = row.get("Stock","").strip().lower() == "limited"
-            out.append(tea)
+            tea["description"] = tea["description"].replace(" (my summary of the brand's text)", "")
+            if row.get("Stock","").strip().lower() == "limited": tea["limited"] = True
+            out.append({k: v for k, v in tea.items() if v})  # drop empty fields
     out.sort(key=lambda t: (t["type"], t["name"].lower()))
     dest = pathlib.Path(__file__).resolve().parent.parent / "teas.json"
-    dest.write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
+    # one tea per line keeps the file small and git diffs readable
+    lines = ",\n".join(json.dumps(t, ensure_ascii=False) for t in out)
+    dest.write_text("[\n" + lines + "\n]\n", encoding="utf-8")
     print(f"Wrote {len(out)} teas to {dest}")
 
 if __name__ == "__main__":

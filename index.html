@@ -96,7 +96,7 @@ footer{color:var(--muted);font-size:.85rem;padding:0 0 32px}
   <div class="grid" id="grid"></div>
 </main>
 
-<footer class="wrap">Caffeine marked ≈ is estimated from the tea type. Always check allergens if you have a sensitivity.</footer>
+<footer class="wrap">Caffeine marked ≈ is estimated. "Trace" means a tiny amount, usually from cocoa. Always check allergens if you have a sensitivity.</footer>
 
 <dialog id="detail"><div class="dlg" id="detailBody"></div></dialog>
 <dialog id="helper"><div class="dlg" id="helperBody"></div></dialog>
@@ -120,15 +120,17 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 function caffeine(t){
   const r=(t.caffeine||"").toLowerCase().trim();
   const scale=parseFloat((t.caffeineScale||"").replace(/[^0-9.]/g,""));
-  if(/caffeine-free|^none|^no$|^no\b/.test(r)) return {level:"None",est:false};
-  if(/low/.test(r)) return {level:"Low",est:false};
-  if(/medium|moderate/.test(r)) return {level:"Moderate",est:false};
-  if(/high/.test(r)) return {level:"High",est:false};
+  const est=/estimat/.test(r);
+  if(/caffeine-free|^none|^no$|^no\b/.test(r)) return {level:"None",est};
+  if(/trace|very small/.test(r)) return {level:"Low",est:false,trace:true};
+  if(/high/.test(r)) return {level:"High",est};
+  if(/low/.test(r)) return {level:"Low",est};
+  if(/medium|moderate/.test(r)) return {level:"Moderate",est};
   const mg=r.match(/(\d+)\s*(?:-|–|to)\s*(\d+)\s*m/);
   if(mg){const a=(+mg[1]+ +mg[2])/2; return {level:a<20?"Low":a<=50?"Moderate":"High",est:false};}
   const n=parseFloat(r);
   if(!isNaN(n)&&scale){const p=n/scale; return {level:p===0?"None":p<=.4?"Low":p<=.7?"Moderate":"High",est:false};}
-  const byType={"Herbal":"None","Other":"Low","White":"Low","Green":"Low","Oolong":"Moderate","Pu-erh":"Moderate","Dark (hei cha)":"Moderate","Black":"High"};
+  const byType={"Herbal":"None","Other":"Low","White":"Low","Green":"Low","Oolong":"Moderate","Pu-erh":"Moderate","Dark (hei cha)":"Moderate","Black":"Moderate"};
   return {level:byType[t.type]||"Moderate",est:true};
 }
 function flavors(t){
@@ -171,7 +173,7 @@ function card(t,i){
     <p class="brand">${esc(t.brand)}</p>
     ${t.summary?`<p class="summary">${esc(t.summary)}</p>`:""}
     <span class="meta">
-      <span class="tag caf" style="background:var(${CAF_COLOR[c.level]})">${c.est?"≈ ":""}${c.level==="None"?"No":c.level} caffeine</span>
+      <span class="tag caf" style="background:var(${CAF_COLOR[c.level]})">${c.est?"≈ ":""}${c.trace?"Trace":c.level==="None"?"No":c.level} caffeine</span>
       ${t.style&&t.style!=="Straight"?`<span class="tag">${esc(t.style)}</span>`:""}
       ${t.allergens?`<span class="tag allergen">Contains: ${esc(t.allergens)}</span>`:""}
     </span></button>`;
@@ -186,8 +188,9 @@ function render(){
 function showDetail(t){
   const c=t._caf;
   const brew=[["Water",t.waterTemp],["Steep",t.steepTime],["Leaf",t.leafAmount],["Re-steeps",t.infusions],["Serve",t.hotIced],["Milk",t.milk]].filter(([,v])=>v);
-  const caffeineLine=`${c.est?"About ":""}${c.level==="None"?"no":c.level.toLowerCase()} caffeine${c.est?" (estimated from tea type)":""}`+
-    (t.caffeine&&!c.est?` · brand says: ${esc(t.caffeine)}${t.caffeineScale?" "+esc(t.caffeineScale):""}`:"");
+  const caffeineLine=`${c.est?"About ":""}${c.trace?"trace":c.level==="None"?"no":c.level.toLowerCase()} caffeine${c.est?" (estimated)":""}`+
+    (t.caffeine&&!/^yes$/i.test(t.caffeine)?` · ${esc(t.caffeine)}${t.caffeineScale?" "+esc(t.caffeineScale):""}`:"");
+  const capLine=caffeineLine.charAt(0).toUpperCase()+caffeineLine.slice(1);
   document.getElementById("detailBody").innerHTML=`
     <button class="close" aria-label="Close" onclick="this.closest('dialog').close()">×</button>
     <span class="kicker"><span class="dot" style="background:var(${TYPE_COLOR[t.type]||"--other"})"></span>${esc(t.type)}${t.subtype?" · "+esc(t.subtype):""}</span>
@@ -195,7 +198,7 @@ function showDetail(t){
     <p class="brand">${esc(t.brand)}${t.origin?" · "+esc(t.origin):""}${/yes/i.test(t.organic)?" · Organic":""}</p>
     ${t.summary?`<h3>Tasting notes</h3><p>${esc(t.summary)}</p>`:""}
     ${t.description?`<h3>About this tea</h3><p>${esc(t.description)}</p>`:""}
-    <h3>Caffeine</h3><p>${caffeineLine}</p>
+    <h3>Caffeine</h3><p>${capLine}</p>
     ${t.ingredients?`<h3>Ingredients</h3><p>${esc(t.ingredients)}</p>`:""}
     ${t.allergens?`<h3>Allergens</h3><p><strong>${esc(t.allergens)}</strong></p>`:""}
     ${brew.length?`<h3>Brewing</h3><div class="brew">${brew.map(([k,v])=>`<div><b>${k}</b>${esc(v)}</div>`).join("")}</div>`:""}
